@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AccountMapper">
+	
+	<select id="memberAccount" resultType="com.monitor.vo.MemberVO">
+		select * from member where userid=#{userid}
+	</select>
+	
+	<insert id="write" parameterType="com.monitor.vo.PostVO">
+		insert into monipost(puserid,content,files,mediatype) values(#{puserid},#{content},#{files},#{mediatype})
+	</insert>
+	
+	<!-- list -->
+	<select id="postList" resultType="com.monitor.vo.PostVO">
+		select * from monipost where puserid = #{userid} order by pbno DESC;
+	</select>
+	
+	<!-- list Check -->
+	<select id="listCheck" resultType="int">
+		select count(*) from monipost where puserid = #{userid}
+	</select>
+	
+	<!-- delete -->
+	<delete id="postDelete">
+		delete from monipost where pbno = #{pbno}
+	</delete>
+
+<!-- like -->
+ 	<insert id="goodInsert" parameterType="com.monitor.vo.GoodVO">
+		insert into good(pbno,guserid) values(#{pbno},#{guserid})
+	</insert>
+	<update id="postGoodUp">
+		update monipost set good = (select count(*) from good where pbno=#{pbno}) where pbno=#{pbno}
+	</update>
+	<delete id="goodDelete">
+		delete from good where pbno = #{pbno} and guserid = #{guserid}
+	</delete>
+	
+	<select id="checkCheck" resultType="int">
+		select count(*) from good where pbno = #{pbno} and guserid = #{guserid}
+	</select>
+	
+	<select id="goodCount" resultType="int">
+		select good from monipost where pbno = #{pbno}
+	</select>
+	
+<!-- Media list -->
+	<select id="mediaList" resultType="com.monitor.vo.PostVO">
+		select * from monipost where puserid = #{userid} and mediatype = 1 order by pbno DESC
+	</select>
+	
+<!-- Follow -->
+	<insert id="addFriend" parameterType="com.monitor.vo.FriendVO">
+		insert into friend(userid,following) values(#{userid},#{following})
+	</insert>
+	<select id="checkFriend" resultType="int">
+		select count(*) from friend where userid=#{userid} and following=#{following}
+	</select>
+	<delete id="deleteFriend">
+		delete from friend where userid=#{userid} and following=#{following}
+	</delete>
+
+<!-- Following -->
+	<select id="followingPage" resultType="com.monitor.vo.MemberVO">
+		select * from member where userid in(select following from friend where userid=#{userid})
+	</select>
+	<select id="followingCount" resultType="int">
+		select count(*) from friend where userid = #{userid}
+	</select>
+	
+<!-- Follower -->
+	<select id="followerPage" resultType="com.monitor.vo.MemberVO">
+		select * from member where userid in(select userid from friend where following=#{userid})
+	</select>
+	<select id="followerCount" resultType="int">
+		select count(*) from friend where following = #{userid}
+	</select>
+
+<!-- recommend user -->	
+	<select id="bestUser" resultType="com.monitor.vo.MemberVO">
+		select * from member where userid in(select following from(select following from friend group by following having count(*) >=1 order by count(following) DESC limit 3)as tmp);
+	</select>
+</mapper>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PostMapper">
+	
+	<insert id="write" parameterType="com.monitor.vo.PostVO">
+		<selectKey resultType="int" keyProperty="pbno" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+	
+		insert into monipost(puserid,content,files,mediatype) values(#{puserid},#{content},#{files},#{mediatype})
+	</insert>
+	
+	<!-- list -->
+	<select id="postList" resultType="com.monitor.vo.PostVO">
+		select * from monipost where puserid = #{userid} order by pbno DESC
+	</select>
+	
+	<!-- list Check -->
+	<select id="listCheck" resultType="int">
+		select count(*) from monipost where puserid = #{userid}
+	</select>
+	
+	<!-- delete -->
+	<delete id="postDelete">
+		delete from monipost where pbno = #{pbno}
+	</delete>
+
+<!-- like -->
+ 	<insert id="goodInsert" parameterType="com.monitor.vo.GoodVO">
+		insert into good(pbno,guserid) values(#{pbno},#{guserid})
+	</insert>
+	<update id="postGoodUp">
+		update monipost set good = (select count(*) from good where pbno=#{pbno}) where pbno=#{pbno}
+	</update>
+	<delete id="goodDelete">
+		delete from good where pbno = #{pbno} and guserid = #{guserid}
+	</delete>
+	 
+	 <select id="checkCheck" resultType="int">
+		select count(*) from good where pbno = #{pbno} and  guserid = #{guserid}
+	</select>
+	
+	<!-- img list Check -->
+	<select id="imgListCheck" resultType="int">
+		select count(*) from monipost where mediatype = 1 and puserid = #{userid}
+	</select>
+
+<!-- file upload -->
+<!-- 	<insert id="addImgFile" parameterType="com.monitor.vo.PostVO">
+		<selectKey resultType="int" keyProperty="pbno" order="BEFORE">
+            SELECT MAX(pbno)
+            FROM monipost
+            WHERE pbno = #{pbno}
+        </selectKey>
+	
+		insert into postimg(fullname,userid,pbno) values(#{files},#{puserid},#{pbno})
+	</insert>
+	
+	<select id="getImgFile" resultType="String">
+		select fullname from postimg where pbno = #{pbno} order by pbno DESC
+	</select> -->
+
+</mapper>
